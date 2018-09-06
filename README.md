@@ -67,7 +67,7 @@ python3 src/main.py vhred --train_strategy [strategy] --test_strategy [strategy]
 If you happen to use our work, please consider citing our paper.
 
 ```
-@inproceedings{niu2018,
+@inproceedings{niu2018adversarial,
 	author = {Niu, Tong  and Bansal, Mohit},
 	title = {Adversarial Over-Sensitivity and Over-Stability Strategies for Dialogue Models},
 	booktitle = {The SIGNLL Conference on Computational Natural Language Learning (CoNLL)},
