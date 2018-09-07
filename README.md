@@ -1,9 +1,5 @@
 # Adversarial Over-Sensitivity and Over-Stability Strategies for Dialogue Models (CoNLL 2018)
 
------------
-# Code, models, and adversarial data coming soon!
------------
-
 Authors' implementation of "Adversarial Over-Sensitivity and Over-Stability Strategies for Dialogue Models" (CoNLL 2018) in TensorFlow (the code was built upon TF 1.4, but any version later than that should also work). Note that if you use any Python version <= 3.5, you will need to manually change all [formatted string literals](https://docs.python.org/3/reference/lexical_analysis.html#f-strings).
 
 Includes code for adversarial testing and training of the VHRED model.
@@ -32,10 +28,11 @@ python3 src/basic/preprocess.py [strategy]
 ```
 where "strategy" is one of "normal_input", "random_swap", "stopword_dropout", "data_level_paraphrasing", "grammar_errors", "add_not" and "antonym".
 
-(4) To train the VHRED model by (Serban et al. 2016)[https://arxiv.org/abs/1605.06069] from scratch, run
+(4) To train the VHRED model by [Serban et al. 2016](https://arxiv.org/abs/1605.06069) from scratch, run
 ```
 python3 src/main.py vhred --batch_size [batch_size]  
 ```
+Alternatively, you can download our [pre-trained checkpoint](https://drive.google.com/open?id=1ALmWLqvXdXj4LZylh0phuLCHJjSOjuYD) and put them under ckpt/
 
 (5) To test the VHRED model on the normal input and each adversarial strategy, run
 ```
@@ -48,7 +45,7 @@ use the [evaluation code](https://github.com/julianser/Ubuntu-Multiresolution-To
 
 (7) Expected Results:
 The model should obtain the following results ("N" stands for "Normal" and "A" stands for "Adversarial"):
-![Result](https://github.com/WolfNiu/AdversarialDialogue/blob/master/image.png)
+![Result](image.png)
 
 # Adversarial Training
 
@@ -64,6 +61,7 @@ python3 src/main.py vhred --train_strategy [strategy] --test_strategy [strategy]
 ```
 ## Citations
 
+If you happen to use our work, please consider citing our paper.
 If you happen to use our work, please consider citing our paper.
 
 ```
