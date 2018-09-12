@@ -1,8 +1,8 @@
-# Adversarial Over-Sensitivity and Over-Stability Strategies for Dialogue Models (CoNLL 2018)
+# [Adversarial Over-Sensitivity and Over-Stability Strategies for Dialogue Models (CoNLL 2018)](https://arxiv.org/abs/1809.02079)
 
 Authors' implementation of "Adversarial Over-Sensitivity and Over-Stability Strategies for Dialogue Models" (CoNLL 2018) in TensorFlow (the code was built upon TF 1.4, but any version later than that should also work). Note that if you use any Python version <= 3.5, you will need to manually change all [formatted string literals](https://docs.python.org/3/reference/lexical_analysis.html#f-strings).
 
-Includes code for adversarial testing and training of the VHRED model.
+Includes code for adversarial testing and training of the VHRED model, adversarial testing datasets, as well as pretrained checkpoints for normal and adversarially-trained models.
 
 Authors: Tong Niu, Mohit Bansal
 
