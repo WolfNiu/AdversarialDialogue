@@ -1,12 +1,13 @@
 
 # coding: utf-8
 
-# In[1]:
+# In[3]:
 
 
 from nltk import pos_tag
+from nltk.tokenize import word_tokenize
 from nltk.corpus import wordnet, stopwords
-from util import split_lst
+from util import split_lst, read_lines, remove_duplicates
 from itertools import chain
 from pattern import en
 import random
@@ -51,11 +52,12 @@ class Adversary(object):
             "stopword_dropout": self._stopword_dropout,
             "add_not": self._add_not,
             "antonym": self._antonym,
+            "paraphrase": self._paraphrase,
         } 
         self.stopwords = list(
             set(stopwords.words("english"))
             .difference(set(stopword_keep_lst)))
-
+        self.paraphrase_dict = None
     
     def _get_boundary_indices(self, utterance):
         boundary_indices = (
@@ -124,8 +126,56 @@ class Adversary(object):
             if token not in self.stopwords]
         return adv_utterance
     
+    def _contains_unknown(self, tokens):
+        result = any(
+            [(token not in self.vocab) for token in tokens])
+        return result
+    
+    def _build_para_dict(self):
+        path = "data/ppdb-2.0-s-all"
+        lines = read_lines(path)
+        relations = [line.split(" ||| ")[-1] for line in lines]
+        equivalent_pairs = []
+        for line in lines:
+            split = line.split(" ||| ")    
+            if split[-1] == "Equivalence":
+                equivalent_pairs.append(tuple(split[1:3]))        
+
+        paraphrase_pairs = [line.split(" ||| ")[1:3] for line in lines]
+        equivalent_pairs_ubuntu = []
+        for pair in equivalent_pairs:
+            tokens_0 = word_tokenize(pair[0]) 
+            tokens_1 = word_tokenize(pair[1])
+            if not (self.contains_unknown(tokens_0) or self.contains_unknown(tokens_1)):
+                equivalent_pairs_ubuntu.append(
+                    (tokens_0, tokens_1))
+        
+        # Insert paraphrases in both directions
+        self.paraphrase_dict = {}
+        for (p0, p1) in equivalent_pairs_ubuntu:
+            p0 = tuple(p0)
+            p1 = tuple(p1)
+            try:
+                self.paraphrase_dict[p0] = self.paraphrase_dict[p0] + [p1]
+            except:
+                self.paraphrase_dict[p0] = [p1]
+
+            try:
+                self.paraphrase_dict[p1] = self.paraphrase_dict[p1] + [p0]
+            except:
+                self.paraphrase_dict[p1] = [p0]
+             
+        # Remove duplicated paraphrases
+        for key in self.paraphrase_dict:
+            self.paraphrase_dict[key] = remove_duplicates(self.paraphrase_dict[key])
+    
     def _paraphrase(utterance, adv_rate=1.0):
         """strategy 3"""
+        if self.paraphrase_dict is None:
+            print("Creating paraphrase dictionary from PPDB...")
+            self._build_para_dict()
+            print(f"Done with paraphrase dictionary size: {len(self.paraphrase_dict)}")
+            
         utterance = copy.deepcopy(utterance)
         utterance_len = len(utterance)
 
@@ -135,7 +185,7 @@ class Adversary(object):
                 if len(set(range(i, j)).intersection(paraphrased_indices)) == 0: # if no sub-segment of this segment hasn't been paraphrased
                     segment = tuple(utterance[i: j])
                     try:
-                        paraphrased_segment = list(random.choice(paraphrase_dict[segment]))
+                        paraphrased_segment = list(random.choice(self.paraphrase_dict[segment]))
                         if random.random() <= adv_rate:
                             utterance[i: j] = paraphrased_segment
                             paraphrased_indices.update(list(range(i, j))) # update paraphrased indices
@@ -143,7 +193,6 @@ class Adversary(object):
                         continue
         return utterance
 
-    
     def _add_not(self, utterance):
         """
         strategy 6

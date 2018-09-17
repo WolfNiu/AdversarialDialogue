@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[ ]:
+# In[5]:
 
 
 # Imports for compatibility between Python 2&3
@@ -86,6 +86,9 @@ def parse_args():
         "--force_restore_point", type=str, default="",
         help="a point that we restore from")
     parser.add_argument(
+        "--force_store_point", type=str, default="",
+        help="a point that we store the model")
+    parser.add_argument(
         "--max_margin_weight", type=float, default=1.0,
         help="weight of max margin")
     parser.add_argument(
@@ -102,9 +105,9 @@ def parse_args():
 # In[ ]:
 
 
-ckpt_path = "ckpt/"
-output_path = "output/"
-data_path = "data/"
+ckpt_path = "ckpt"
+output_path = "output"
+data_path = "data"
 
 args = parse_args()
 start_epoch = args.start_epoch
@@ -115,6 +118,7 @@ train_strategy = args.train_strategy
 test_strategy = args.test_strategy
 batch_size = args.batch_size
 force_restore_point = args.force_restore_point
+force_store_point = args.force_store_point
 max_margin_weight = args.max_margin_weight
 margin = args.margin
 bpe = args.bpe
@@ -160,14 +164,16 @@ no_unk = True
 
 # Extra strings to prepend to file name
 bpe_str = "bpe_" if bpe else ""
-extra_str = f"{bpe_str}vhred_train_{train_strategy}_test_{test_strategy}"
-print("Extra string:", extra_str)
+model_extra_str = f"{bpe_str}vhred_train_{train_strategy}"
+output_extra_str = f"{model_extra_str}_test_{test_strategy}"
+print("Model extra string:", model_extra_str)
+print("Output extra string:", output_extra_str)
 
 
 # In[ ]:
 
 
-def get_vocab(bpe_str="", data_path="data/"):
+def get_vocab(bpe_str=""):
     filename = f"{bpe_str}vocab.txt"
     file = os.path.join(data_path, filename)
     vocab = read_lines(file)
@@ -177,7 +183,7 @@ def get_vocab(bpe_str="", data_path="data/"):
 # In[ ]:
 
 
-def get_data_dict(strategy_str, bpe_str="", data_path="data/"):
+def get_data_dict(strategy_str, bpe_str=""):
     filenames = [
         f"indexed/{bpe_str}indexed_training_text.{strategy_str}.pkl",
         f"indexed/{bpe_str}indexed_valid_text.{strategy_str}.pkl",
@@ -198,9 +204,9 @@ Load pickled lists
 """
 splits = ["train", "valid", "test"]
 strategy_str = test_strategy if infer_only else train_strategy
-vocab = get_vocab(bpe_str=bpe_str, data_path=data_path)
-norm_data_dict = get_data_dict(strategies[0], bpe_str=bpe_str, data_path=data_path)
-adv_data_dict = get_data_dict(strategy_str, bpe_str=bpe_str, data_path=data_path)
+vocab = get_vocab(bpe_str=bpe_str)
+norm_data_dict = get_data_dict(strategies[0], bpe_str=bpe_str)
+adv_data_dict = get_data_dict(strategy_str, bpe_str=bpe_str)
 
 
 # In[ ]:
@@ -420,7 +426,7 @@ def run_vhred(model, sess, mode, epoch):
               (mode, epoch, exp(epoch_perplexity)))
         
         if force_store_point == "":
-            store_ckpt = f"{ckpt_path}seq2seq_RL{extra_str}_{epoch}"
+            store_ckpt = os.path.join(ckpt_path, f"{model_extra_str}_{epoch}")
         else:
             store_ckpt = force_store_point
         saver_seq2seq.save(sess, store_ckpt)
@@ -462,7 +468,7 @@ def main(start_epoch):
             if force_restore_point != "":
                 restore_ckpt = force_restore_point
             else:
-                restore_ckpt = f"{ckpt_path}/seq2seq_RL{restore_extra_str}_{start_epoch}"
+                restore_ckpt = f"{ckpt_path}/{model_extra_str}_{start_epoch}"
 
         if restore_ckpt is not None:
             saver_seq2seq.restore(sess, restore_ckpt)
@@ -498,9 +504,9 @@ def main(start_epoch):
                         if k % 3 == 2 else sent
                         for (k, sent) in enumerate(marked_G)]
 
-            filename = f"{output_path}/{extra_str[1:]}_{mode}_result_{start_epoch}.txt"
+            file = os.path.join(output_path, f"{output_extra_str}_{mode}_result_{start_epoch}.txt")
 
-            write_lines(filename, marked_M)
+            write_lines(file, marked_M)
 
             # only need 1 epoch for inferring or getting PPL
             if infer_only: 
