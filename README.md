@@ -1,8 +1,8 @@
 # Adversarial Over-Sensitivity and Over-Stability Strategies for Dialogue Models (CoNLL 2018)
 
-Authors' implementation of "Adversarial Over-Sensitivity and Over-Stability Strategies for Dialogue Models" (CoNLL 2018) in TensorFlow (the code was built upon TF 1.4, but any version later than that should also work). Note that if you use any Python version <= 3.5, you will need to manually change all [formatted string literals](https://docs.python.org/3/reference/lexical_analysis.html#f-strings).
+Authors' implementation of "[Adversarial Over-Sensitivity and Over-Stability Strategies for Dialogue Models](https://arxiv.org/abs/1809.02079)" (CoNLL 2018) in TensorFlow (the code was built upon TF 1.4, but any version later than that should also work). Note that if you use any Python version <= 3.5, you will need to manually change all [formatted string literals](https://docs.python.org/3/reference/lexical_analysis.html#f-strings).
 
-Includes code for adversarial testing and training of the VHRED model.
+Includes code for adversarial testing and training of the VHRED model, adversarial testing datasets, as well as pretrained checkpoints for normal and adversarially-trained models.
 
 Authors: Tong Niu, Mohit Bansal
 
@@ -28,7 +28,6 @@ where "strategy" is one of "normal_inputs", "random_swap", "stopword_dropout", "
 ```
 python3 src/main.py --batch_size [batch_size]  
 ```
-Alternatively, you can download our [pre-trained checkpoint](https://drive.google.com/open?id=1ALmWLqvXdXj4LZylh0phuLCHJjSOjuYD) and put it under ckpt/
 
 (5) To test the VHRED model on the normal input and each adversarial strategy, run
 ```
@@ -43,7 +42,7 @@ use the [evaluation code](https://github.com/julianser/Ubuntu-Multiresolution-To
 The model should obtain the following results ("N" stands for "Normal" and "A" stands for "Adversarial"):
 ![Result](image.png)
 
-# Adversarial Training
+## Adversarial Training
 
 (1) To train on each adversarial strategy, run
 ```
@@ -51,12 +50,16 @@ python3 src/main.py --train_strategy [strategy] --start_epoch [start_epoch] --ba
 ```
 where "strategy" is one of "normal_inputs", "random_swap", "stopword_dropout", "paraphrase", "generative_paraphrase", "grammar_errors", "all_should_not_change", "add_not" and "antonym", and "start_epoch" is the epoch to restore from.
 
-Alternatively, you can download our [pre-trained checkpoints](https://drive.google.com/open?id=1ALmWLqvXdXj4LZylh0phuLCHJjSOjuYD) and put them under ckpt/
-
 (2) To test on the trained adversarial model, run
 ```
 python3 src/main.py --train_strategy [strategy] --test_strategy [strategy] --start_epoch [start_epoch] --batch_size [batch_size]
 ```
+
+## Adversarial Data and Pre-trained Checkpoints
+(1) The adversarial data for each strategy is provided under data/raw/
+
+(2) Alternatively, you can also download our [pre-trained checkpoints (for the vhred model, as well as for each adversarially trained model)](https://drive.google.com/open?id=1ALmWLqvXdXj4LZylh0phuLCHJjSOjuYD) and put them under ckpt/ to reproduce the F1 results.
+
 ## Citations
 
 If you happen to use our work, please consider citing [our paper](https://arxiv.org/abs/1809.02079).
