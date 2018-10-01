@@ -1,18 +1,20 @@
 
 # coding: utf-8
 
-# In[3]:
+# In[5]:
 
 
 from nltk import pos_tag
 from nltk.tokenize import word_tokenize
 from nltk.corpus import wordnet, stopwords
-from util import split_lst, read_lines, remove_duplicates
+from util import split_lst, read_lines, remove_duplicates, load_pickle, dump_pickle
 from itertools import chain
 from pattern import en
 import random
 import string
 from copy import copy
+from tqdm import tqdm
+from os.path import isfile
 
 
 # In[2]:
@@ -136,23 +138,26 @@ class Adversary(object):
         lines = read_lines(path)
         relations = [line.split(" ||| ")[-1] for line in lines]
         equivalent_pairs = []
-        for line in lines:
+        print("Preprocessing raw data...")
+        for line in tqdm(lines):
             split = line.split(" ||| ")    
             if split[-1] == "Equivalence":
                 equivalent_pairs.append(tuple(split[1:3]))        
 
         paraphrase_pairs = [line.split(" ||| ")[1:3] for line in lines]
         equivalent_pairs_ubuntu = []
-        for pair in equivalent_pairs:
+        print("Extracting paraphrase pairs...")
+        for pair in tqdm(equivalent_pairs):
             tokens_0 = word_tokenize(pair[0]) 
             tokens_1 = word_tokenize(pair[1])
-            if not (self.contains_unknown(tokens_0) or self.contains_unknown(tokens_1)):
+            if not (self._contains_unknown(tokens_0) or self._contains_unknown(tokens_1)):
                 equivalent_pairs_ubuntu.append(
                     (tokens_0, tokens_1))
         
         # Insert paraphrases in both directions
+        print("Building dictionary...")
         self.paraphrase_dict = {}
-        for (p0, p1) in equivalent_pairs_ubuntu:
+        for (p0, p1) in tqdm(equivalent_pairs_ubuntu):
             p0 = tuple(p0)
             p1 = tuple(p1)
             try:
@@ -169,14 +174,19 @@ class Adversary(object):
         for key in self.paraphrase_dict:
             self.paraphrase_dict[key] = remove_duplicates(self.paraphrase_dict[key])
     
-    def _paraphrase(utterance, adv_rate=1.0):
+    def _paraphrase(self, utterance, adv_rate=1.0):
         """strategy 3"""
         if self.paraphrase_dict is None:
-            print("Creating paraphrase dictionary from PPDB...")
-            self._build_para_dict()
-            print(f"Done with paraphrase dictionary size: {len(self.paraphrase_dict)}")
+            file = "data/paraphrase_dict.pkl"
+            if isfile(file):
+                self.paraphrase_dict = load_pickle(file)
+            else:
+                print("Creating paraphrase dictionary from PPDB...")
+                self._build_para_dict()
+                print(f"Done with paraphrase dictionary size: {len(self.paraphrase_dict)}")
+                dump_pickle(file, self.paraphrase_dict)
             
-        utterance = copy.deepcopy(utterance)
+        utterance = copy(utterance)
         utterance_len = len(utterance)
 
         paraphrased_indices = set() # keep track of which indices are already paraphrased

@@ -309,7 +309,7 @@ def get_source_and_target(examples):
 # In[ ]:
 
 
-def run_vhred(model, sess, mode, epoch):
+def run_vhred(model, sess, mode, epoch, saver=None):
     training_flag = True if mode == "train" else False
     norm_dialogues = norm_data_dict[mode]
     adv_dialogues = adv_data_dict[mode]
@@ -429,7 +429,7 @@ def run_vhred(model, sess, mode, epoch):
             store_ckpt = os.path.join(ckpt_path, f"{model_extra_str}_{epoch}")
         else:
             store_ckpt = force_store_point
-        saver_seq2seq.save(sess, store_ckpt)
+        saver.save(sess, store_ckpt)
         print(f"Checkpoint saved for epoch {epoch}.")
     else:
         zipped = zip_lsts(
@@ -478,7 +478,7 @@ def main(start_epoch):
             if not infer_only: # for getting perplexity of test data, use train branch
                 mode = "train"
                 start_epoch += 1
-                run_vhred(model, sess, mode, start_epoch)
+                run_vhred(model, sess, mode, start_epoch, saver=saver_seq2seq)
 
                 if not no_validation and not glimpse_training and start_epoch % 5 == 0 and start_epoch >= 10:
                     mode = "valid"
