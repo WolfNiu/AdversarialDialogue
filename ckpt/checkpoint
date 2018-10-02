@@ -1,0 +1,3 @@
+model_checkpoint_path: "vhred_train_normal_inputs_1"
+all_model_checkpoint_paths: "vhred_train_normal_inputs_0"
+all_model_checkpoint_paths: "vhred_train_normal_inputs_1"

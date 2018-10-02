@@ -419,7 +419,7 @@ def run_vhred(model, sess, mode, epoch, saver=None):
             print("Finished testing batch %d" % batch_counter)
         
         batch_counter += 1
-            
+                    
     if mode == "train":
         epoch_perplexity = total_loss / total_num_tokens
         print("Epoch (%s) %d average perplexity: %.2f" % 
@@ -480,7 +480,7 @@ def main(start_epoch):
                 start_epoch += 1
                 run_vhred(model, sess, mode, start_epoch, saver=saver_seq2seq)
 
-                if not no_validation and not glimpse_training and start_epoch % 5 == 0 and start_epoch >= 10:
+                if start_epoch % 5 == 0 and start_epoch >= 10:
                     mode = "valid"
                     zipped_responses = run_vhred(model, sess, mode, start_epoch)
                 else:
